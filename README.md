@@ -1,4 +1,7 @@
 # pi_video_looper
+
+En färdig imagefil (10.0.20) ligger [här](https://cityofmalmo.sharepoint.com/:u:/r/sites/kf-mm-filmproduktion/Delade%20dokument/General/pi_video_looper/pi_video_looper-1.0.20.img?csf=1&web=1&e=d8L7Ir)
+
 An application to turn your Raspberry Pi into a dedicated looping video playback device.
 Can be used in art installations, fairs, theatre, events, infoscreens, advertisements etc...
 
