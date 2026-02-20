@@ -24,6 +24,18 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.21 
+ - Playlist files (m3u) can be triggered from GPIO
+ - Playlist files can now also contain entries to other playlist files
+
+#### new in v1.0.20
+ - GPIO pins can be set via ini to be pulled high or low 
+ - special "loop specific file" function  
+   You can have multiple videos in the playlist but the file with _repeat_-1x will always be looped - this is useful if you want to loop one video but allow jumps to other videos via e.g. GPIO pins  
+ - added a free space check to copymode - file will only be copied if the target (SD Card) has enough free space available (+100MB buffer) 
+ - random playback is honored when using "skip"
+ - added option to randomly select only files that have not been played yet
+
 #### new in v1.0.19
  - keyboard and gpio control can now be disabled while a video is running - makes the most sense together with the "one shot playback" setting
 
@@ -38,7 +50,7 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
  - send previous/next chapter commands to omxplayer (o/i on keyboard)
 
 #### new in v1.0.15
- - one shot playback: option to enable stopping playback after each file (usefull in combination with gpio triggers)
+ - one shot playback: option to enable stopping playback after each file (useful in combination with gpio triggers)
 
 #### new in v1.0.14
  - control the video looper via RPI GPIO pins (see section "control" below)
@@ -136,6 +148,10 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
  - option for displaying an image instead of a blank screen between videos
     
 ## How to install
+You need to run this if you use the image mentioned above (2022-01-28-raspios-buster-armhf-lite)    
+`echo "deb http://legacy.raspbian.org/raspbian/ buster main contrib non-free rpi" | sudo tee /etc/apt/sources.list`  
+
+then proceed as normal:    
 `sudo apt-get install git`  
 `cd ~`  
 `git clone https://github.com/adafruit/pi_video_looper`  
@@ -178,10 +194,16 @@ Note: files with the same name always get overwritten.
 * you can have one video repeated X times before playing the next by adding _repeat_Nx to the filename of a video, where N is a positive number
     * with hello_video there is no gap when a video is repeated but there is a small gap between different videos
     * with omxplayer there will also be a short gap between the repeats
+
+* by adding _repeat_-1x the file will be looped forever even if other files exist - this is useful for having one video loop but allow jumps to other video via e.g. GPIO
     
 * if you have only one video then omxplayer will also loop seamlessly (and with audio)
 
 * to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
+
+* m3u files are a pretty powerful tool to tailor the looper to your usecase  
+Example: create a start.m3u with only one video entry inside, and set it in the ini as playlist.path, create a second playlist file e.g. button1.m3u in there you can define multiple videos and as the last entry add "start.m3u" and add it to a gpio pin in the ini's gpio_pin_map  
+now you can trigger the button1 playlist from gpio and after it is done playing the videos defined there it will jump back to the start loop (beware! if random is enabled it could also select the m3u file from the list at any time)
 
 ### Control
 The video looper can be controlled via keyboard input or via configured GPIO pins. 
@@ -203,7 +225,7 @@ To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map`
 Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio. Bridge a mapped pin with a Ground pin to trigger it.
 
 The pin mapping has the form: "pinnumber" : "action”. The action can be one of the following:
-* a filename as a string to play 
+* a filename as a string or movie title (= filename without extension) - "_repeat_Nx" can be omitted from the filename  
 * an absolute index number (starting with 0) 
 * a string in the form of `+n` or `-n` (with n being an integer) for a relative jump
 * a keyboard command (see above) in the form of a pygame key constant (see list: https://www.pygame.org/docs/ref/key.html)
